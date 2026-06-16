@@ -26,16 +26,6 @@
     flex-shrink: 0;
   }
   #toolbar h1 { color: white; font-size: 13px; font-weight: 600; flex: 1; }
-  #apiKeyInput {
-    padding: 5px 8px;
-    border-radius: 5px;
-    border: 1px solid #4a6fa0;
-    background: #162d4a;
-    color: #a0c4f0;
-    font-size: 11px;
-    width: 220px;
-  }
-  #apiKeyInput::placeholder { color: #4a6fa0; }
 
   #dropZone {
     margin: 10px 12px 6px;
@@ -65,7 +55,6 @@
     background: white;
   }
 
-  /* PDF pane */
   #pdfPane {
     flex: 1;
     background: #525659;
@@ -99,9 +88,8 @@
   }
   #pdfPlaceholder .bigIcon { font-size: 48px; opacity: 0.4; }
 
-  /* Result pane */
   #resultPane {
-    width: 290px;
+    width: 300px;
     flex-shrink: 0;
     background: white;
     border-left: 1px solid #e2e8f0;
@@ -145,6 +133,21 @@
   }
   #analyzeBtn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
+  /* Dokument-type badge */
+  #docTypeBadge {
+    margin: 0 12px 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  #docTypeBadge.faktura  { display: flex; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  #docTypeBadge.kreditnota { display: flex; background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+
   #status {
     margin: 0 12px 6px;
     padding: 6px 10px;
@@ -158,12 +161,28 @@
   #status.info    { display: flex; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
   #status.success { display: flex; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
   #status.error   { display: flex; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+  #status.warning { display: flex; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
   .spinner {
     display: inline-block; width: 12px; height: 12px;
     border: 2px solid currentColor; border-top-color: transparent;
-    border-radius: 50%; animation: spin 0.7s linear infinite;
+    border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Varselsboks for kontonummer-avvik */
+  #kontoVarsel {
+    margin: 0 12px 6px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    background: #fff7ed;
+    color: #92400e;
+    border: 1px solid #fed7aa;
+    display: none;
+    flex-shrink: 0;
+  }
+  #kontoVarsel.show { display: block; }
 
   #fields { flex: 1; overflow-y: auto; padding: 4px 12px 8px; }
 
@@ -187,13 +206,14 @@
     min-height: 32px;
     word-break: break-all;
     transition: all 0.3s;
-    white-space: pre-line;   /* ← respekterer linjeskift i bookingnr-feltet */
+    white-space: pre-line;
   }
-  .fieldVal.filled    { background: #fefce8; border-color: #fde047; color: #1a2a3a; font-weight: 600; }
-  .fieldVal.multi     { background: #f0f9ff; border-color: #7dd3fc; font-weight: 600; }
-  .fieldVal.empty     { color: #cbd5e1; font-style: italic; font-weight: 400; }
+  .fieldVal.filled   { background: #fefce8; border-color: #fde047; color: #1a2a3a; font-weight: 600; }
+  .fieldVal.multi    { background: #f0f9ff; border-color: #7dd3fc; font-weight: 600; }
+  .fieldVal.empty    { color: #cbd5e1; font-style: italic; font-weight: 400; }
+  .fieldVal.alert    { background: #fff1f2; border-color: #fca5a5; font-weight: 600; }
+  .fieldVal.readonly { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; font-style: italic; }
 
-  /* Badge for antall bookinger */
   .booking-badge {
     display: inline-block;
     background: #2563eb;
@@ -213,6 +233,26 @@
   .conf-low  { color: #dc2626; }
 
   .divider { border: none; border-top: 1px solid #f1f5f9; margin: 6px 0; }
+  .section-label {
+    font-size: 9px; font-weight: 700; color: #94a3b8;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin: 8px 0 4px; display: block;
+  }
+
+  /* Innfaktura-forslag */
+  #innfakturaForslag {
+    margin: 0 12px 6px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    font-size: 11px;
+    color: #166534;
+    display: none;
+    flex-shrink: 0;
+  }
+  #innfakturaForslag.show { display: block; }
+  #innfakturaForslag strong { display: block; margin-bottom: 3px; font-size: 12px; }
 
   #sendBtn {
     margin: 0 12px 10px;
@@ -260,8 +300,7 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.1</span></h1>
-  <input id="apiKeyInput" type="password" placeholder="Lim inn Anthropic API-nøkkel…" value="sk-ant-api03-LIMPINNDINNOKKKELHER">
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.5</span></h1>
 </div>
 
 <div id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -292,7 +331,10 @@
       <span id="btnText">Analyser faktura</span>
     </button>
 
+    <div id="docTypeBadge"></div>
     <div id="status"></div>
+    <div id="kontoVarsel"></div>
+    <div id="innfakturaForslag"></div>
     <div id="fields"></div>
 
     <div id="rawSection">
@@ -308,37 +350,78 @@
 </div>
 
 <script>
-// ── FELTDEFINISJONAR ──
-// bookingnr er spesialbehandlet: Claude returnerer array, vi viser med linjeskift
+// ════════════════════════════════════════════════════════════════
+//  KONFIGURASJON — tilpass disse variablene ved FileMaker-integrasjon
+// ════════════════════════════════════════════════════════════════
+
+const FM_CONFIG = {
+  // URL til Cloudflare Worker som proxy til Anthropic
+  workerUrl: 'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev',
+
+  // Navn på FileMaker-scriptet som mottar data fra Web Vieweren
+  mottaScript: 'AI_Motta_Fakturadata',
+
+  // Navn på FileMaker-scriptet som oppretter innfaktura (valgfritt)
+  opprettInnfakturaScript: 'AI_Opprett_Innfaktura',
+
+  // Kontonummer registrert i FileMaker for denne leverandøren
+  // Settes dynamisk av FileMaker ved å erstatte «KONTONR» i HTML-koden
+  registrertKontonr: '«KONTONR»',
+
+  // Bokføringssummen fra portalen (alle matchende bookinger)
+  // Settes dynamisk av FileMaker ved å erstatte «PORTALSUM» i HTML-koden
+  portalSum: '«PORTALSUM»',
+};
+
+// ════════════════════════════════════════════════════════════════
+//  FELTDEFINISJONAR
+// ════════════════════════════════════════════════════════════════
 const FIELDS = [
-  { key: 'firma',       label: 'Firma',        fmField: 'Firma',      multi: false },
-  { key: 'fakturanr',   label: 'Fakturanr',    fmField: 'Fakturanr',  multi: false },
-  { key: 'bookingnr',   label: 'Bookingnr',    fmField: 'Bookingnr',  multi: true  }, // ← ARRAY
-  { key: 'gjestnavn',   label: 'Gjest navn',   fmField: 'GjestNavn',  multi: false },
-  { key: 'forfall',     label: 'Forfall',      fmField: 'Forfall',    multi: false },
-  { key: 'kid',         label: 'KID',          fmField: 'KID',        multi: false },
-  { key: 'sum',         label: 'Sum',          fmField: 'Sum',        multi: false },
-  { key: 'mva',         label: 'MVA',          fmField: 'MVA',        multi: false },
-  { key: 'fakturadato', label: 'Fakturadato',  fmField: 'Fakturadato',multi: false },
-  { key: 'iban',        label: 'IBAN / Konto', fmField: 'Bankkonto',  multi: false },
+  { key: 'firma',       label: 'Firma',         fmField: 'Firma',      multi: false },
+  { key: 'fakturanr',   label: 'Fakturanr',     fmField: 'Fakturanr',  multi: false },
+  { key: 'bookingnr',   label: 'Bookingnr',     fmField: 'Bookingnr',  multi: true  },
+  { key: 'hotelref',    label: 'Hotel Ref',     fmField: 'HotelRef',   multi: false },
+  { key: 'gjestnavn',   label: 'Gjest navn',    fmField: 'GjestNavn',  multi: false },
+  { key: 'forfall',     label: 'Forfall',       fmField: 'Forfall',    multi: false },
+  { key: 'kid',         label: 'KID',           fmField: 'KID',        multi: false },
+  { key: 'sum',         label: 'Sum',           fmField: 'Sum',        multi: false },
+  { key: 'mva',         label: 'MVA',           fmField: 'MVA',        multi: false },
+  { key: 'fakturadato', label: 'Fakturadato',   fmField: 'Fakturadato',multi: false },
+  { key: 'kontonr',     label: 'Kontonr på faktura', fmField: 'Bankkonto', multi: false },
+  { key: 'iban',        label: 'IBAN',          fmField: 'IBAN',       multi: false },
 ];
 
 let currentFileData = null;
 let currentFileType = null;
 let extractedData   = null;
 
-// ── BYGG FELT-UI ──
+// ════════════════════════════════════════════════════════════════
+//  BYGG FELT-UI
+// ════════════════════════════════════════════════════════════════
 function buildFields() {
   const container = document.getElementById('fields');
   container.innerHTML = '';
+
+  // Vis registrert kontonr som readonly referansefelt
+  if (FM_CONFIG.registrertKontonr && FM_CONFIG.registrertKontonr !== '«KONTONR»') {
+    const g = document.createElement('div');
+    g.className = 'fieldGroup';
+    g.innerHTML = `
+      <label>Registrert kontonr (FM)</label>
+      <div class="fieldVal readonly">${FM_CONFIG.registrertKontonr}</div>
+    `;
+    container.appendChild(g);
+    const hr = document.createElement('hr');
+    hr.className = 'divider';
+    container.appendChild(hr);
+  }
+
   FIELDS.forEach(f => {
     const g = document.createElement('div');
     g.className = 'fieldGroup';
-
     const labelHtml = f.multi
       ? `<label>${f.label} <span id="badge_${f.key}" class="booking-badge" style="display:none"></span></label>`
       : `<label>${f.label}</label>`;
-
     g.innerHTML = `
       ${labelHtml}
       <div class="fieldVal empty" id="fv_${f.key}">—</div>
@@ -359,11 +442,10 @@ function setField(key, value, confidence, isMulti) {
   if (!el) return;
 
   if (isMulti) {
-    // value er array av bookingnumre
     const arr = Array.isArray(value) ? value.filter(Boolean) : (value ? [value] : []);
     const badge = document.getElementById('badge_' + key);
     if (arr.length > 0) {
-      el.textContent = arr.join('\n');   // linjeskift mellom numrene
+      el.textContent = arr.join('\n');
       el.className = arr.length > 1 ? 'fieldVal multi' : 'fieldVal filled';
       if (badge) {
         badge.textContent = arr.length > 1 ? arr.length + ' bookinger' : '1 booking';
@@ -401,9 +483,15 @@ function clearFields() {
     if (cf) cf.className = 'confidence';
     if (badge) badge.style.display = 'none';
   });
+  document.getElementById('kontoVarsel').classList.remove('show');
+  document.getElementById('innfakturaForslag').classList.remove('show');
+  document.getElementById('docTypeBadge').className = '';
+  document.getElementById('docTypeBadge').textContent = '';
 }
 
-// ── FILOPPLASTING ──
+// ════════════════════════════════════════════════════════════════
+//  FILOPPLASTING
+// ════════════════════════════════════════════════════════════════
 function handleFile(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -464,48 +552,113 @@ function setStatus(type, msg) {
   el.innerHTML = msg;
 }
 
-// ── ANALYSE ──
+// ════════════════════════════════════════════════════════════════
+//  KONTONUMMER-SAMMENLIGNING
+// ════════════════════════════════════════════════════════════════
+function normaliserKonto(konto) {
+  return (konto || '').replace(/[\s.\-]/g, '').toLowerCase();
+}
+
+function sjekkKontonummer(fakturakonto, iban) {
+  const regKonto = FM_CONFIG.registrertKontonr;
+  if (!regKonto || regKonto === '«KONTONR»') return; // ikke satt fra FileMaker
+
+  const reg = normaliserKonto(regKonto);
+  const fk  = normaliserKonto(fakturakonto);
+  const ib  = normaliserKonto(iban);
+
+  // Sjekk om registrert konto finnes i enten kontonr eller IBAN fra faktura
+  const match = (fk && (fk === reg || fk.includes(reg) || reg.includes(fk))) ||
+                (ib && (ib === reg || ib.includes(reg) || reg.includes(ib)));
+
+  if (!match && (fk || ib)) {
+    const varsel = document.getElementById('kontoVarsel');
+    varsel.innerHTML = `⚠️ <strong>Kontonummer-avvik!</strong><br>
+      Registrert: <strong>${regKonto}</strong><br>
+      På faktura: <strong>${fakturakonto || '—'}</strong>${iban ? ' / ' + iban : ''}`;
+    varsel.classList.add('show');
+
+    // Marker kontonr-feltet rødt
+    const el = document.getElementById('fv_kontonr');
+    if (el && el.textContent !== '—') el.className = 'fieldVal alert';
+    const elIban = document.getElementById('fv_iban');
+    if (elIban && elIban.textContent !== '—') elIban.className = 'fieldVal alert';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  INNFAKTURA-FORSLAG
+// ════════════════════════════════════════════════════════════════
+function sjekkInnfakturaForslag(fakturaSum) {
+  const portalSum = FM_CONFIG.portalSum;
+  if (!portalSum || portalSum === '«PORTALSUM»' || !fakturaSum) return;
+
+  const fs = parseFloat(String(fakturaSum).replace(',', '.'));
+  const ps = parseFloat(String(portalSum).replace(',', '.'));
+
+  if (!isNaN(fs) && !isNaN(ps) && Math.abs(fs - ps) < 0.01) {
+    const forslag = document.getElementById('innfakturaForslag');
+    forslag.innerHTML = `<strong>✅ Sum stemmer med portal (${ps})</strong>
+      Bookingsum og fakturassum er like — du kan opprette innfaktura.`;
+    forslag.classList.add('show');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ANALYSE
+// ════════════════════════════════════════════════════════════════
 async function analyzeInvoice() {
-  const apiKey = document.getElementById('apiKeyInput').value.trim();
-  if (!apiKey) { setStatus('error', '⚠️ Lim inn din Anthropic API-nøkkel øverst'); return; }
   if (!currentFileData) { setStatus('error', '⚠️ Last opp en faktura først'); return; }
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
   document.getElementById('btnIcon').innerHTML = '<span class="spinner"></span>';
   document.getElementById('btnText').textContent = 'Analyserer…';
-  setStatus('info', '<span class="spinner"></span> Claude leser fakturaen…');
+  setStatus('info', '<span class="spinner"></span> Claude leser dokumentet…');
   clearFields();
   document.getElementById('sendBtn').classList.remove('visible');
 
-  const prompt = `Du er en ekspert på å ekstrahere data fra fakturaer, spesielt fra hotell og reiseliv.
+  const prompt = `Du er en ekspert på å ekstrahere data fra fakturaer og kreditnotaer, spesielt fra hotell og reiseliv.
 
-Les fakturaen og returner KUN gyldig JSON. Ingen forklaring, ingen markdown-blokk.
+Les dokumentet og returner KUN gyldig JSON. Ingen forklaring, ingen markdown.
 
-VIKTIG for bookingnr:
-- En faktura kan inneholde FLERE bookingreferanser/reservasjonsnumre
-- Returner ALLTID bookingnr som en JSON-array, selv om det bare er ett nummer
-- Eksempel med ett nummer:  "bookingnr": ["163930"]
-- Eksempel med flere:       "bookingnr": ["163930", "163931", "163932"]
-- Se etter felt merket: Booking, Reservation, Ref, Bookingnr, Bnr, Stay-ID, Folio, eller lignende
-- Inkluder alle bookingnumre du finner på fakturaen
+DOKUMENTTYPE:
+- Sjekk om dette er en "faktura" eller "kreditnota" (credit note/kreditering)
+- En kreditnota har ofte negativt beløp, eller tekst som "Kreditnota", "Credit Note", "Kreditering"
 
-JSON-struktur (bruk null for felt som ikke finnes):
+BOOKINGNR — VIKTIG:
+- Vi bruker interne bookingnumre som typisk er 6-sifrede tall, f.eks: 163536, 164300
+- Returner ALLTID bookingnr som array, selv om det bare er ett
+- Hvis du IKKE finner slike numre, returner tom array []
+- Se etter felt merket: Booking, Reservation, Bookingnr, Bnr, Stay-ID, Folio
+
+HOTELREF:
+- Hotellets egne reservasjonsnumre/referanser som IKKE er våre bookingnumre
+- F.eks: Res #, Reservation Number, Room, folio-nummer
+- Returner som streng, kommaseparert hvis flere
+
+FAKTURANR:
+- Hvis det er flere fakturanumre på samme dokument, skill med komma
+
+JSON-struktur (null for felt som ikke finnes):
 {
-  "firma":       "leverandørens navn",
-  "fakturanr":   "fakturanummer",
-  "bookingnr":   ["nr1", "nr2"],
-  "gjestnavn":   "gjestens navn (kan være flere, skill med komma)",
-  "forfall":     "YYYY-MM-DD",
-  "kid":         "KID eller betalingsreferanse",
-  "sum":         "totalbeløp som tall uten valutasymbol",
-  "mva":         "MVA-beløp som tall",
-  "fakturadato": "YYYY-MM-DD",
-  "iban":        "IBAN eller bankkontonummer",
+  "dokumenttype":  "faktura" eller "kreditnota",
+  "firma":         "leverandørens navn",
+  "fakturanr":     "fakturanummer(e), kommaseparert",
+  "bookingnr":     ["163536", "164300"],
+  "hotelref":      "hotellets reservasjonsnummer(e)",
+  "gjestnavn":     "gjestens navn(n), kommaseparert",
+  "forfall":       "YYYY-MM-DD",
+  "kid":           "KID eller betalingsreferanse",
+  "sum":           "totalbeløp som tall uten valutasymbol (negativt for kreditnota)",
+  "mva":           "MVA-beløp som tall",
+  "fakturadato":   "YYYY-MM-DD",
+  "kontonr":       "bankkontonummer slik det står på fakturaen",
+  "iban":          "IBAN-nummer",
   "konfidensgrad": {
-    "firma": 0.95, "fakturanr": 0.99, "bookingnr": 0.90,
-    "gjestnavn": 0.85, "forfall": 0.98, "kid": 0.70,
-    "sum": 0.99, "mva": 0.95, "fakturadato": 0.98, "iban": 0.90
+    "firma": 0.95, "fakturanr": 0.99, "bookingnr": 0.90, "hotelref": 0.85,
+    "gjestnavn": 0.85, "forfall": 0.98, "kid": 0.70, "sum": 0.99,
+    "mva": 0.95, "fakturadato": 0.98, "kontonr": 0.90, "iban": 0.90
   }
 }`;
 
@@ -513,16 +666,11 @@ JSON-struktur (bruk null for felt som ikke finnes):
   const contentType = currentFileType === 'pdf' ? 'document' : 'image';
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch(FM_CONFIG.workerUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5',
         max_tokens: 1024,
         messages: [{
           role: 'user',
@@ -550,13 +698,29 @@ JSON-struktur (bruk null for felt som ikke finnes):
     const conf = parsed.konfidensgrad || {};
     FIELDS.forEach(f => setField(f.key, parsed[f.key], conf[f.key], f.multi));
 
-    // Lag statusmelding som nevner antall bookinger hvis flere
+    // Dokumenttype-badge
+    const badge = document.getElementById('docTypeBadge');
+    if (parsed.dokumenttype === 'kreditnota') {
+      badge.textContent = '⚠️ KREDITNOTA';
+      badge.className = 'kreditnota';
+    } else {
+      badge.textContent = '📄 Faktura';
+      badge.className = 'faktura';
+    }
+
+    // Kontonummer-sjekk
+    sjekkKontonummer(parsed.kontonr, parsed.iban);
+
+    // Innfaktura-forslag
+    sjekkInnfakturaForslag(parsed.sum);
+
+    // Statusmelding
     const bnr = parsed.bookingnr;
-    const antall = Array.isArray(bnr) ? bnr.length : 1;
+    const antall = Array.isArray(bnr) ? bnr.length : 0;
     const bookingTekst = antall > 1
       ? ` — <strong>${antall} bookingnumre funnet</strong>`
-      : '';
-    setStatus('success', '✅ Analyse fullført' + bookingTekst + ' — sjekk og send til FileMaker');
+      : antall === 0 ? ' — <strong>ingen bookingnr funnet</strong>' : '';
+    setStatus('success', '✅ Analyse fullført' + bookingTekst);
     document.getElementById('sendBtn').classList.add('visible');
 
   } catch(err) {
@@ -569,41 +733,44 @@ JSON-struktur (bruk null for felt som ikke finnes):
   }
 }
 
-// ── SEND TIL FILEMAKER ──
+// ════════════════════════════════════════════════════════════════
+//  SEND TIL FILEMAKER
+// ════════════════════════════════════════════════════════════════
 function sendToFileMaker() {
   if (!extractedData) return;
 
-  // bookingnr: array → linjeskift-separert streng (FileMaker ¶ = \n)
   const bookingnrArr = Array.isArray(extractedData.bookingnr)
     ? extractedData.bookingnr
     : (extractedData.bookingnr ? [extractedData.bookingnr] : []);
 
   const payload = {
-    Firma:       extractedData.firma       ?? '',
-    Fakturanr:   extractedData.fakturanr   ?? '',
-    Bookingnr:   bookingnrArr.join('\n'),   // ← linjeskift = ¶ i FileMaker
-    GjestNavn:   extractedData.gjestnavn   ?? '',
-    Forfall:     extractedData.forfall     ?? '',
-    KID:         extractedData.kid         ?? '',
-    Sum:         extractedData.sum         ?? '',
-    MVA:         extractedData.mva         ?? '',
-    Fakturadato: extractedData.fakturadato ?? '',
-    Bankkonto:   extractedData.iban        ?? '',
+    Dokumenttype: extractedData.dokumenttype  ?? 'faktura',
+    Firma:        extractedData.firma         ?? '',
+    Fakturanr:    extractedData.fakturanr     ?? '',
+    Bookingnr:    bookingnrArr.join('\n'),      // ¶-separert i FileMaker
+    HotelRef:     extractedData.hotelref      ?? '',
+    GjestNavn:    extractedData.gjestnavn     ?? '',
+    Forfall:      extractedData.forfall       ?? '',
+    KID:          extractedData.kid           ?? '',
+    Sum:          extractedData.sum           ?? '',
+    MVA:          extractedData.mva           ?? '',
+    Fakturadato:  extractedData.fakturadato   ?? '',
+    Bankkonto:    extractedData.kontonr       ?? '',
+    IBAN:         extractedData.iban          ?? '',
   };
 
   const jsonPayload = JSON.stringify(payload);
 
   try {
     if (typeof FileMaker !== 'undefined') {
-      FileMaker.PerformScript('AI_Motta_Fakturadata', jsonPayload);
+      FileMaker.PerformScript(FM_CONFIG.mottaScript, jsonPayload);
       setStatus('success', '✅ Data sendt til FileMaker!');
     } else {
-      window.location = 'fmp://$/BOSsystem?script=AI_Motta_Fakturadata&param=' + encodeURIComponent(jsonPayload);
-      setStatus('success', '✅ Sender data til FileMaker…');
+      console.log('FileMaker payload:', jsonPayload);
+      alert('FileMaker payload (dev-modus):\n\n' + JSON.stringify(payload, null, 2));
     }
   } catch(e) {
-    console.log('FileMaker payload:', jsonPayload);
-    alert('FileMaker payload (dev-modus):\n\n' + JSON.stringify(payload, null, 2));
+    console.error(e);
   }
 }
 

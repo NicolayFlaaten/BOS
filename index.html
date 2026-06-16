@@ -3,772 +3,616 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BOS Faktura Analyse</title>
+<title>AI Faktura Analyse</title>
 <style>
-  :root {
-    --bg: #f0f4f8;
-    --surface: #ffffff;
-    --surface2: #f8fafc;
-    --border: #dde3ea;
-    --border-focus: #3b7dd8;
-    --text: #1a2332;
-    --text-muted: #6b7a8d;
-    --accent: #1e5cb3;
-    --accent-light: #e8f0fb;
-    --accent-hover: #1749a0;
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --warn: #d97706;
-    --warn-bg: #fffbeb;
-    --radius: 8px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px 16px;
-  }
-
-  .app { max-width: 820px; margin: 0 auto; }
-
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-
-  .logo {
-    width: 40px; height: 40px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .logo svg { width: 22px; height: 22px; fill: white; }
-
-  header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-  header p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-
-  .card-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 16px;
-  }
-
-  /* Toggle */
-  .input-toggle {
-    display: flex;
-    gap: 0;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    width: fit-content;
-  }
-  .toggle-btn {
-    padding: 8px 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a2a3a;
     font-size: 13px;
-    font-weight: 500;
-    border: none;
-    background: var(--surface);
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.12s;
-  }
-  .toggle-btn.active { background: var(--accent); color: white; }
-
-  /* Drop zone */
-  .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 36px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    background: var(--surface2);
-    position: relative;
-  }
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: var(--accent);
-    background: var(--accent-light);
-  }
-  .drop-zone input[type="file"] {
-    position: absolute; inset: 0;
-    opacity: 0; cursor: pointer;
-    width: 100%; height: 100%;
-  }
-  .drop-icon {
-    width: 44px; height: 44px;
-    background: var(--accent-light);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px;
-  }
-  .drop-icon svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
-  .drop-zone h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .drop-zone p { font-size: 13px; color: var(--text-muted); }
-  .file-types { margin-top: 10px; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
-  .badge {
-    font-size: 11px; font-weight: 600;
-    padding: 2px 8px; border-radius: 20px;
-    background: var(--border); color: var(--text-muted);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Image preview */
-  .image-preview-box {
-    display: none;
-    margin-top: 12px;
-    position: relative;
-  }
-  .image-preview-box.visible { display: block; }
-  .image-preview-box img {
-    width: 100%;
-    max-height: 260px;
-    object-fit: contain;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: #000;
-  }
-  .file-info {
+  #toolbar {
+    background: #1e3a5f;
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    background: var(--success-bg);
-    border: 1px solid #bbf7d0;
-    border-radius: var(--radius);
-    margin-top: 8px;
+    flex-shrink: 0;
   }
-  .file-info svg { width: 16px; height: 16px; stroke: var(--success); fill: none; stroke-width: 2; flex-shrink: 0; }
-  .file-info span { font-size: 13px; font-weight: 500; color: var(--success); flex: 1; }
-  .file-info button {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 16px; line-height: 1;
+  #toolbar h1 { color: white; font-size: 13px; font-weight: 600; flex: 1; }
+  #apiKeyInput {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid #4a6fa0;
+    background: #162d4a;
+    color: #a0c4f0;
+    font-size: 11px;
+    width: 220px;
+  }
+  #apiKeyInput::placeholder { color: #4a6fa0; }
+
+  #dropZone {
+    margin: 10px 12px 6px;
+    border: 2px dashed #93c5fd;
+    border-radius: 10px;
+    background: white;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  #dropZone:hover, #dropZone.drag-over { border-color: #2563eb; background: #eff6ff; }
+  #dropZone .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  #dropZone p { color: #64748b; font-size: 11px; }
+  #dropZone strong { color: #2563eb; }
+  #fileInput { display: none; }
+
+  #main {
+    display: flex;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+    margin: 0 12px 12px 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    background: white;
   }
 
-  /* Text input */
-  .text-input-area { display: none; }
-  .text-input-area.visible { display: block; }
-  textarea.raw-text {
-    width: 100%;
-    min-height: 110px;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: inherit;
-    resize: vertical;
-    outline: none;
-    color: var(--text);
-    background: var(--surface2);
+  /* PDF pane */
+  #pdfPane {
+    flex: 1;
+    background: #525659;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px 0 0 10px;
+    overflow: hidden;
+    min-width: 0;
   }
-  textarea.raw-text:focus { border-color: var(--border-focus); background: white; }
+  #pdfPane h3 {
+    background: #3a3d40;
+    color: #ddd;
+    padding: 7px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  #pdfViewer {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px;
+  }
+  #pdfCanvas { max-width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  #pdfPlaceholder {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 100%; color: #888; gap: 8px; font-size: 12px;
+  }
+  #pdfPlaceholder .bigIcon { font-size: 48px; opacity: 0.4; }
 
-  /* Analyze btn */
-  .btn-analyze {
-    width: 100%;
-    padding: 13px;
-    background: var(--accent);
+  /* Result pane */
+  #resultPane {
+    width: 290px;
+    flex-shrink: 0;
+    background: white;
+    border-left: 1px solid #e2e8f0;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #resultPane h3 {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  #analyzeBtn {
+    margin: 10px 12px 6px;
+    padding: 10px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
     border: none;
-    border-radius: var(--radius);
-    font-size: 15px;
-    font-weight: 600;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-    transition: background 0.15s;
-  }
-  .btn-analyze:hover:not(:disabled) { background: var(--accent-hover); }
-  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-analyze svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; }
-
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    gap: 7px;
+    transition: all 0.2s;
     flex-shrink: 0;
+  }
+  #analyzeBtn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+  }
+  #analyzeBtn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  #status {
+    margin: 0 12px 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  #status.info    { display: flex; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  #status.success { display: flex; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  #status.error   { display: flex; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+  .spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid currentColor; border-top-color: transparent;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Status */
-  .status-bar {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 16px;
+  #fields { flex: 1; overflow-y: auto; padding: 4px 12px 8px; }
+
+  .fieldGroup { margin-bottom: 7px; }
+  .fieldGroup label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
   }
-  .status-bar.visible { display: flex; }
-  .status-bar.info { background: var(--accent-light); color: var(--accent); border: 1px solid #bfdbfe; }
-  .status-bar.success { background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0; }
-  .status-bar.warn { background: var(--warn-bg); color: var(--warn); border: 1px solid #fde68a; }
-  .status-bar svg { width: 16px; height: 16px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; }
-
-  /* Results */
-  #results-section { display: none; }
-  #results-section.visible { display: block; }
-
-  .results-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } }
-
-  .field-group { display: flex; flex-direction: column; gap: 5px; }
-  .field-group label {
-    font-size: 11px; font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .field-wrapper { position: relative; }
-  .field-value {
-    width: 100%;
-    padding: 10px 36px 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 14px; font-weight: 500;
-    color: var(--text);
-    background: var(--surface2);
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.15s;
-  }
-  .field-value:focus { border-color: var(--border-focus); background: white; }
-  .field-value.filled { border-color: #86efac; background: var(--success-bg); }
-
-  .copy-btn {
-    position: absolute;
-    right: 8px; top: 50%;
-    transform: translateY(-50%);
-    background: none; border: none; cursor: pointer;
-    padding: 4px; color: var(--text-muted);
-    transition: color 0.12s; display: flex;
-  }
-  .copy-btn:hover { color: var(--accent); }
-  .copy-btn.copied { color: var(--success); }
-  .copy-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
-
-  .divider { height: 1px; background: var(--border); margin: 18px 0; }
-
-  .footer-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .btn-copy-all {
-    padding: 10px 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 13px; font-weight: 600;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 7px;
-    color: var(--text);
-    transition: all 0.12s;
-  }
-  .btn-copy-all:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-  .btn-copy-all svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
-
-  .btn-reset {
-    font-size: 13px; color: var(--text-muted);
-    background: none; border: none; cursor: pointer;
-    text-decoration: underline;
-  }
-  .btn-reset:hover { color: var(--text); }
-
-  .raw-notes {
-    margin-top: 14px;
-    padding: 10px 14px;
-    background: var(--warn-bg);
-    border: 1px solid #fde68a;
-    border-radius: var(--radius);
+  .fieldVal {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 7px 10px;
     font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    display: none;
+    color: #1e293b;
+    min-height: 32px;
+    word-break: break-all;
+    transition: all 0.3s;
+    white-space: pre-line;   /* ← respekterer linjeskift i bookingnr-feltet */
   }
-  .raw-notes.visible { display: block; }
-  .raw-notes strong { color: var(--warn); font-weight: 600; display: block; margin-bottom: 3px; }
+  .fieldVal.filled    { background: #fefce8; border-color: #fde047; color: #1a2a3a; font-weight: 600; }
+  .fieldVal.multi     { background: #f0f9ff; border-color: #7dd3fc; font-weight: 600; }
+  .fieldVal.empty     { color: #cbd5e1; font-style: italic; font-weight: 400; }
+
+  /* Badge for antall bookinger */
+  .booking-badge {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .confidence { font-size: 9px; color: #94a3b8; margin-top: 2px; display: none; }
+  .confidence.show { display: block; }
+  .conf-high { color: #16a34a; }
+  .conf-med  { color: #d97706; }
+  .conf-low  { color: #dc2626; }
+
+  .divider { border: none; border-top: 1px solid #f1f5f9; margin: 6px 0; }
+
+  #sendBtn {
+    margin: 0 12px 10px;
+    padding: 9px;
+    background: #166534;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  #sendBtn:hover { background: #15803d; }
+  #sendBtn.visible { display: flex; }
+
+  #rawSection { margin: 0 12px 8px; flex-shrink: 0; }
+  #rawToggle {
+    font-size: 10px; color: #94a3b8; cursor: pointer;
+    text-decoration: underline; background: none; border: none; padding: 0;
+  }
+  #rawText {
+    display: none;
+    background: #1e293b; color: #7dd3fc;
+    border-radius: 6px; padding: 8px;
+    font-size: 10px; font-family: monospace;
+    max-height: 100px; overflow-y: auto;
+    margin-top: 4px; white-space: pre-wrap; word-break: break-all;
+  }
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
 </head>
 <body>
-<div class="app">
 
-  <header>
-    <div class="logo">
-      <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-    </div>
-    <div>
-      <h1>BOS Faktura Analyse</h1>
-      <p>Last opp faktura eller lim inn tekst — hent ut feltene til FileMaker</p>
-    </div>
-  </header>
+<div id="toolbar">
+  <h1>🤖 AI Faktura Analyse</h1>
+  <input id="apiKeyInput" type="password" placeholder="Lim inn Anthropic API-nøkkel…">
+</div>
 
-  <!-- Input card -->
-  <div class="card">
-    <div class="card-title">Velg inndata</div>
+<div id="dropZone" onclick="document.getElementById('fileInput').click()">
+  <span class="icon">📂</span>
+  <p><strong>Klikk for å velge faktura</strong> eller dra PDF / bilde hit</p>
+  <p style="margin-top:3px; font-size:10px; color:#94a3b8;">Støtter PDF, JPG, PNG</p>
+  <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png">
+</div>
 
-    <div class="input-toggle">
-      <button class="toggle-btn active" onclick="setMode('file')">📎 Fil / Bilde</button>
-      <button class="toggle-btn" onclick="setMode('text')">📋 Lim inn tekst</button>
-    </div>
+<div id="main">
 
-    <!-- File drop -->
-    <div id="file-mode">
-      <div class="drop-zone" id="drop-zone"
-        ondragover="handleDragOver(event)"
-        ondragleave="handleDragLeave(event)"
-        ondrop="handleDrop(event)">
-        <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileSelect(event)">
-        <div class="drop-icon">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-        </div>
-        <h3>Dra og slipp fil her</h3>
-        <p>eller klikk for å velge</p>
-        <div class="file-types">
-          <span class="badge">PDF</span>
-          <span class="badge">JPG</span>
-          <span class="badge">PNG</span>
-          <span class="badge">TXT</span>
-        </div>
+  <div id="pdfPane">
+    <h3>FAKTURA FORHÅNDSVISNING</h3>
+    <div id="pdfViewer">
+      <div id="pdfPlaceholder">
+        <span class="bigIcon">📄</span>
+        <span>Last opp en faktura for å starte</span>
       </div>
-
-      <div class="image-preview-box" id="image-preview-box">
-        <img id="preview-img" src="" alt="Forhåndsvisning">
-      </div>
-
-      <div class="file-info" id="file-info" style="display:none">
-        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        <span id="file-name">fil.pdf</span>
-        <button onclick="clearFile()">✕</button>
-      </div>
+      <canvas id="pdfCanvas" style="display:none;"></canvas>
     </div>
+  </div>
 
-    <!-- Text paste -->
-    <div id="text-mode" class="text-input-area">
-      <textarea class="raw-text" id="raw-text" placeholder="Lim inn fakturatekst her — f.eks. kopiert fra e-post, PDF eller annet system..."></textarea>
-    </div>
+  <div id="resultPane">
+    <h3>EKSTRAHERTE FELT</h3>
 
-    <button class="btn-analyze" id="analyze-btn" onclick="analyzeInvoice()" disabled>
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Analyser faktura
+    <button id="analyzeBtn" disabled onclick="analyzeInvoice()">
+      <span id="btnIcon">🔍</span>
+      <span id="btnText">Analyser faktura</span>
     </button>
-  </div>
 
-  <!-- Status -->
-  <div class="status-bar info" id="status-bar">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span id="status-text">Analyserer...</span>
-  </div>
+    <div id="status"></div>
+    <div id="fields"></div>
 
-  <!-- Results card -->
-  <div class="card" id="results-section">
-    <div class="card-title">Hentet informasjon</div>
-
-    <div class="results-grid">
-
-      <div class="field-group">
-        <label>Bookingnr</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-bookingnr" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-bookingnr', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>Fakturanr</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-fakturanr" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-fakturanr', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>KID-nummer</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-kid" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-kid', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>Beløp inkl. MVA (NOK)</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-belop" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-belop', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>Forfallsdato</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-forfallsdato" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-forfallsdato', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>Kontaktnavn</label>
-        <div class="field-wrapper">
-          <input class="field-value" id="f-kontakt" type="text" placeholder="—" readonly>
-          <button class="copy-btn" onclick="copyField('f-kontakt', this)" title="Kopier">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-        </div>
-      </div>
-
+    <div id="rawSection">
+      <button id="rawToggle" onclick="toggleRaw()">Vis rå JSON-svar</button>
+      <pre id="rawText"></pre>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="footer-row">
-      <button class="btn-copy-all" onclick="copyAll()">
-        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        Kopier alle felt (tab-separert)
-      </button>
-      <button class="btn-reset" onclick="resetAll()">Start på nytt</button>
-    </div>
-
-    <div class="raw-notes" id="raw-notes">
-      <strong>⚠ Merknader:</strong>
-      <span id="notes-text"></span>
-    </div>
+    <button id="sendBtn" onclick="sendToFileMaker()">
+      ✅ Send til FileMaker
+    </button>
   </div>
 
 </div>
 
 <script>
-  const WORKER_URL = 'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev';
+// ── FELTDEFINISJONAR ──
+// bookingnr er spesialbehandlet: Claude returnerer array, vi viser med linjeskift
+const FIELDS = [
+  { key: 'firma',       label: 'Firma',        fmField: 'Firma',      multi: false },
+  { key: 'fakturanr',   label: 'Fakturanr',    fmField: 'Fakturanr',  multi: false },
+  { key: 'bookingnr',   label: 'Bookingnr',    fmField: 'Bookingnr',  multi: true  }, // ← ARRAY
+  { key: 'gjestnavn',   label: 'Gjest navn',   fmField: 'GjestNavn',  multi: false },
+  { key: 'forfall',     label: 'Forfall',      fmField: 'Forfall',    multi: false },
+  { key: 'kid',         label: 'KID',          fmField: 'KID',        multi: false },
+  { key: 'sum',         label: 'Sum',          fmField: 'Sum',        multi: false },
+  { key: 'mva',         label: 'MVA',          fmField: 'MVA',        multi: false },
+  { key: 'fakturadato', label: 'Fakturadato',  fmField: 'Fakturadato',multi: false },
+  { key: 'iban',        label: 'IBAN / Konto', fmField: 'Bankkonto',  multi: false },
+];
 
-  let currentMode = 'file';
-  let selectedFile = null;
-  let selectedFileData = null;
+let currentFileData = null;
+let currentFileType = null;
+let extractedData   = null;
 
-  function setMode(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.toggle-btn').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0 && mode === 'file') || (i === 1 && mode === 'text'));
-    });
-    document.getElementById('file-mode').style.display = mode === 'file' ? 'block' : 'none';
-    document.getElementById('text-mode').classList.toggle('visible', mode === 'text');
-    checkReady();
-  }
+// ── BYGG FELT-UI ──
+function buildFields() {
+  const container = document.getElementById('fields');
+  container.innerHTML = '';
+  FIELDS.forEach(f => {
+    const g = document.createElement('div');
+    g.className = 'fieldGroup';
 
-  function checkReady() {
-    const btn = document.getElementById('analyze-btn');
-    if (currentMode === 'file') {
-      btn.disabled = !selectedFile;
-    } else {
-      btn.disabled = !document.getElementById('raw-text').value.trim();
+    const labelHtml = f.multi
+      ? `<label>${f.label} <span id="badge_${f.key}" class="booking-badge" style="display:none"></span></label>`
+      : `<label>${f.label}</label>`;
+
+    g.innerHTML = `
+      ${labelHtml}
+      <div class="fieldVal empty" id="fv_${f.key}">—</div>
+      <div class="confidence" id="fc_${f.key}"></div>
+    `;
+    container.appendChild(g);
+    if (f.key === 'sum') {
+      const hr = document.createElement('hr');
+      hr.className = 'divider';
+      container.appendChild(hr);
     }
-  }
-
-  document.getElementById('raw-text').addEventListener('input', checkReady);
-
-  function handleDragOver(e) {
-    e.preventDefault();
-    document.getElementById('drop-zone').classList.add('drag-over');
-  }
-  function handleDragLeave() {
-    document.getElementById('drop-zone').classList.remove('drag-over');
-  }
-  function handleDrop(e) {
-    e.preventDefault();
-    document.getElementById('drop-zone').classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) loadFile(file);
-  }
-  function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) loadFile(file);
-  }
-
-  async function compressImage(dataUrl, maxPx = 1600, quality = 0.82) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxPx || height > maxPx) {
-          const scale = maxPx / Math.max(width, height);
-          width = Math.round(width * scale);
-          height = Math.round(height * scale);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = dataUrl;
-    });
-  }
-
-  function loadFile(file) {
-    selectedFile = file;
-    document.getElementById('file-name').textContent = file.name;
-    document.getElementById('file-info').style.display = 'flex';
-
-    const reader = new FileReader();
-
-    if (file.type === 'text/plain') {
-      reader.onload = (e) => {
-        selectedFileData = { type: 'text', content: e.target.result };
-        document.getElementById('image-preview-box').classList.remove('visible');
-        checkReady();
-      };
-      reader.readAsText(file);
-    } else if (file.type === 'application/pdf') {
-      reader.onload = (e) => {
-        selectedFileData = { type: 'pdf', base64: e.target.result.split(',')[1] };
-        document.getElementById('image-preview-box').classList.remove('visible');
-        checkReady();
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // Image
-      reader.onload = async (e) => {
-        const compressed = await compressImage(e.target.result);
-        selectedFileData = {
-          type: 'image',
-          base64: compressed.split(',')[1],
-          mediaType: 'image/jpeg'
-        };
-        document.getElementById('preview-img').src = compressed;
-        document.getElementById('image-preview-box').classList.add('visible');
-        checkReady();
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function clearFile() {
-    selectedFile = null;
-    selectedFileData = null;
-    document.getElementById('file-info').style.display = 'none';
-    document.getElementById('image-preview-box').classList.remove('visible');
-    document.getElementById('file-input').value = '';
-    checkReady();
-  }
-
-  function setStatus(msg, type) {
-    const bar = document.getElementById('status-bar');
-    bar.className = 'status-bar visible ' + type;
-    document.getElementById('status-text').textContent = msg;
-  }
-
-  function hideStatus() {
-    document.getElementById('status-bar').classList.remove('visible');
-  }
-
-  function setField(id, value) {
-    const el = document.getElementById(id);
-    el.value = value || '';
-    el.classList.toggle('filled', !!(value && value !== 'null' && value !== ''));
-  }
-
-  const SYSTEM_PROMPT = `Du er en faktura-analysemotor for Best Of Scandinavia (BOS).
-Din eneste oppgave er å ekstrahere nøkkelfelter fra fakturaer og returnere ALLTID gyldig JSON og ingenting annet.
-Ikke inkluder markdown-kodeblokker, ikke inkluder forklaringer utenfor JSON-objektet.`;
-
-  const EXTRACT_PROMPT = `Analyser dette fakturadokumentet og returner et JSON-objekt med nøyaktig disse feltene:
-
-{
-  "bookingnr": "...",
-  "fakturanr": "...",
-  "kid": "...",
-  "belop": "...",
-  "forfallsdato": "DD.MM.YYYY",
-  "kontaktnavn": "...",
-  "merknader": "..."
+  });
 }
 
-Regler:
-- Sett feltet til null hvis du ikke finner det
-- belop: totalt beløp inkl. MVA, kun tall og komma (f.eks. "1 410,00")
-- forfallsdato: norsk format DD.MM.YYYY
-- kontaktnavn: personen fakturaen er adressert til (Att: / Contact: ...)
-- kid: KID-nummeret for betaling
-- merknader: noter noe usikkert eller manglende, eller null hvis alt er klart
-- Returner KUN JSON, ingen annen tekst`;
+function setField(key, value, confidence, isMulti) {
+  const el = document.getElementById('fv_' + key);
+  const cf = document.getElementById('fc_' + key);
+  if (!el) return;
 
-  async function analyzeInvoice() {
-    const btn = document.getElementById('analyze-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Analyserer...';
-    setStatus('Sender til AI-analyse...', 'info');
-    document.getElementById('results-section').classList.remove('visible');
+  if (isMulti) {
+    // value er array av bookingnumre
+    const arr = Array.isArray(value) ? value.filter(Boolean) : (value ? [value] : []);
+    const badge = document.getElementById('badge_' + key);
+    if (arr.length > 0) {
+      el.textContent = arr.join('\n');   // linjeskift mellom numrene
+      el.className = arr.length > 1 ? 'fieldVal multi' : 'fieldVal filled';
+      if (badge) {
+        badge.textContent = arr.length > 1 ? arr.length + ' bookinger' : '1 booking';
+        badge.style.display = 'inline-block';
+        badge.style.background = arr.length > 1 ? '#2563eb' : '#16a34a';
+      }
+    } else {
+      el.textContent = '—';
+      el.className = 'fieldVal empty';
+      if (badge) badge.style.display = 'none';
+    }
+  } else {
+    if (value !== null && value !== undefined && value !== '') {
+      el.textContent = value;
+      el.className = 'fieldVal filled';
+    } else {
+      el.textContent = '—';
+      el.className = 'fieldVal empty';
+    }
+  }
 
-    try {
-      let messages;
+  if (cf && confidence != null) {
+    const cls = confidence >= 0.9 ? 'conf-high' : confidence >= 0.6 ? 'conf-med' : 'conf-low';
+    cf.textContent = 'Sikkerhet: ' + Math.round(confidence * 100) + '%';
+    cf.className = 'confidence show ' + cls;
+  }
+}
 
-      if (currentMode === 'text') {
-        const text = document.getElementById('raw-text').value.trim();
-        messages = [{
+function clearFields() {
+  FIELDS.forEach(f => {
+    const el = document.getElementById('fv_' + f.key);
+    const cf = document.getElementById('fc_' + f.key);
+    const badge = document.getElementById('badge_' + f.key);
+    if (el) { el.textContent = '—'; el.className = 'fieldVal empty'; }
+    if (cf) cf.className = 'confidence';
+    if (badge) badge.style.display = 'none';
+  });
+}
+
+// ── FILOPPLASTING ──
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64Full = e.target.result;
+    currentFileData = base64Full.split(',')[1];
+    currentFileType = file.type.includes('pdf') ? 'pdf' : 'image';
+    if (currentFileType === 'pdf') await renderPDF(base64Full);
+    else renderImage(base64Full);
+    document.getElementById('analyzeBtn').disabled = false;
+    clearFields();
+    document.getElementById('sendBtn').classList.remove('visible');
+    setStatus('', '');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function renderPDF(dataUrl) {
+  try {
+    const pdfData = atob(dataUrl.split(',')[1]);
+    const uint8 = new Uint8Array(pdfData.length);
+    for (let i = 0; i < pdfData.length; i++) uint8[i] = pdfData.charCodeAt(i);
+    const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
+    const page = await pdf.getPage(1);
+    const vp = page.getViewport({ scale: 1.4 });
+    const canvas = document.getElementById('pdfCanvas');
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    canvas.style.display = 'block';
+    document.getElementById('pdfPlaceholder').style.display = 'none';
+  } catch(err) {
+    document.getElementById('pdfPlaceholder').innerHTML =
+      '<span class="bigIcon">📄</span><span>PDF lastet inn</span>';
+  }
+}
+
+function renderImage(dataUrl) {
+  const canvas = document.getElementById('pdfCanvas');
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = img.width; canvas.height = img.height;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.style.display = 'block';
+    document.getElementById('pdfPlaceholder').style.display = 'none';
+  };
+  img.src = dataUrl;
+}
+
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = type ? 'status ' + type : '';
+  el.innerHTML = msg;
+}
+
+// ── ANALYSE ──
+async function analyzeInvoice() {
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) { setStatus('error', '⚠️ Lim inn din Anthropic API-nøkkel øverst'); return; }
+  if (!currentFileData) { setStatus('error', '⚠️ Last opp en faktura først'); return; }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('btnIcon').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('btnText').textContent = 'Analyserer…';
+  setStatus('info', '<span class="spinner"></span> Claude leser fakturaen…');
+  clearFields();
+  document.getElementById('sendBtn').classList.remove('visible');
+
+  const prompt = `Du er en ekspert på å ekstrahere data fra fakturaer, spesielt fra hotell og reiseliv.
+
+Les fakturaen og returner KUN gyldig JSON. Ingen forklaring, ingen markdown-blokk.
+
+VIKTIG for bookingnr:
+- En faktura kan inneholde FLERE bookingreferanser/reservasjonsnumre
+- Returner ALLTID bookingnr som en JSON-array, selv om det bare er ett nummer
+- Eksempel med ett nummer:  "bookingnr": ["163930"]
+- Eksempel med flere:       "bookingnr": ["163930", "163931", "163932"]
+- Se etter felt merket: Booking, Reservation, Ref, Bookingnr, Bnr, Stay-ID, Folio, eller lignende
+- Inkluder alle bookingnumre du finner på fakturaen
+
+JSON-struktur (bruk null for felt som ikke finnes):
+{
+  "firma":       "leverandørens navn",
+  "fakturanr":   "fakturanummer",
+  "bookingnr":   ["nr1", "nr2"],
+  "gjestnavn":   "gjestens navn (kan være flere, skill med komma)",
+  "forfall":     "YYYY-MM-DD",
+  "kid":         "KID eller betalingsreferanse",
+  "sum":         "totalbeløp som tall uten valutasymbol",
+  "mva":         "MVA-beløp som tall",
+  "fakturadato": "YYYY-MM-DD",
+  "iban":        "IBAN eller bankkontonummer",
+  "konfidensgrad": {
+    "firma": 0.95, "fakturanr": 0.99, "bookingnr": 0.90,
+    "gjestnavn": 0.85, "forfall": 0.98, "kid": 0.70,
+    "sum": 0.99, "mva": 0.95, "fakturadato": 0.98, "iban": 0.90
+  }
+}`;
+
+  const mediaType = currentFileType === 'pdf' ? 'application/pdf' : 'image/jpeg';
+  const contentType = currentFileType === 'pdf' ? 'document' : 'image';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{
           role: 'user',
           content: [
-            { type: 'text', text: EXTRACT_PROMPT + '\n\nFAKTURATEKST:\n' + text }
+            { type: contentType, source: { type: 'base64', media_type: mediaType, data: currentFileData } },
+            { type: 'text', text: prompt }
           ]
-        }];
-      } else if (selectedFileData) {
-        if (selectedFileData.type === 'text') {
-          messages = [{
-            role: 'user',
-            content: [{ type: 'text', text: EXTRACT_PROMPT + '\n\nFAKTURATEKST:\n' + selectedFileData.content }]
-          }];
-        } else if (selectedFileData.type === 'pdf') {
-          messages = [{
-            role: 'user',
-            content: [
-              { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: selectedFileData.base64 } },
-              { type: 'text', text: EXTRACT_PROMPT }
-            ]
-          }];
-        } else {
-          // image
-          messages = [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: selectedFileData.mediaType, data: selectedFileData.base64 } },
-              { type: 'text', text: EXTRACT_PROMPT }
-            ]
-          }];
-        }
-      }
+        }]
+      })
+    });
 
-      setStatus('AI analyserer dokumentet...', 'info');
-
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages
-        })
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-
-      const rawText = (data.content || []).map(c => c.text || '').join('');
-      const clean = rawText.replace(/```json|```/g, '').trim();
-
-      let result;
-      try {
-        result = JSON.parse(clean);
-      } catch {
-        const match = clean.match(/\{[\s\S]*\}/);
-        if (match) result = JSON.parse(match[0]);
-        else throw new Error('Kunne ikke tolke svar fra AI: ' + clean.substring(0, 200));
-      }
-
-      setField('f-bookingnr', result.bookingnr);
-      setField('f-fakturanr', result.fakturanr);
-      setField('f-kid', result.kid);
-      setField('f-belop', result.belop);
-      setField('f-forfallsdato', result.forfallsdato);
-      setField('f-kontakt', result.kontaktnavn);
-
-      if (result.merknader && result.merknader !== 'null') {
-        document.getElementById('notes-text').textContent = result.merknader;
-        document.getElementById('raw-notes').classList.add('visible');
-      } else {
-        document.getElementById('raw-notes').classList.remove('visible');
-      }
-
-      document.getElementById('results-section').classList.add('visible');
-      setStatus('✓ Analyse fullført — kontroller feltene og kopier til FileMaker', 'success');
-
-    } catch (err) {
-      setStatus('Feil: ' + err.message, 'warn');
-      console.error(err);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error?.message || 'HTTP ' + resp.status);
     }
 
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Analyser faktura`;
+    const data = await resp.json();
+    const raw = data.content?.[0]?.text || '';
+    document.getElementById('rawText').textContent = raw;
+
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    extractedData = parsed;
+
+    const conf = parsed.konfidensgrad || {};
+    FIELDS.forEach(f => setField(f.key, parsed[f.key], conf[f.key], f.multi));
+
+    // Lag statusmelding som nevner antall bookinger hvis flere
+    const bnr = parsed.bookingnr;
+    const antall = Array.isArray(bnr) ? bnr.length : 1;
+    const bookingTekst = antall > 1
+      ? ` — <strong>${antall} bookingnumre funnet</strong>`
+      : '';
+    setStatus('success', '✅ Analyse fullført' + bookingTekst + ' — sjekk og send til FileMaker');
+    document.getElementById('sendBtn').classList.add('visible');
+
+  } catch(err) {
+    setStatus('error', '❌ Feil: ' + err.message);
+    console.error(err);
+  } finally {
     btn.disabled = false;
-    checkReady();
+    document.getElementById('btnIcon').textContent = '🔍';
+    document.getElementById('btnText').textContent = 'Analyser på nytt';
   }
+}
 
-  function copyField(id, btn) {
-    const val = document.getElementById(id).value;
-    if (!val) return;
-    navigator.clipboard.writeText(val).then(() => {
-      btn.classList.add('copied');
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-      setTimeout(() => {
-        btn.classList.remove('copied');
-        btn.innerHTML = `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
-      }, 1800);
-    });
-  }
+// ── SEND TIL FILEMAKER ──
+function sendToFileMaker() {
+  if (!extractedData) return;
 
-  function copyAll() {
-    const fields = [
-      { label: 'Bookingnr', id: 'f-bookingnr' },
-      { label: 'Fakturanr', id: 'f-fakturanr' },
-      { label: 'KID', id: 'f-kid' },
-      { label: 'Beløp', id: 'f-belop' },
-      { label: 'Forfallsdato', id: 'f-forfallsdato' },
-      { label: 'Kontaktnavn', id: 'f-kontakt' },
-    ];
-    const rows = fields.map(f => `${f.label}\t${document.getElementById(f.id).value || ''}`).join('\n');
-    navigator.clipboard.writeText(rows).then(() => {
-      setStatus('✓ Alle felt kopiert til utklippstavlen', 'success');
-    });
-  }
+  // bookingnr: array → linjeskift-separert streng (FileMaker ¶ = \n)
+  const bookingnrArr = Array.isArray(extractedData.bookingnr)
+    ? extractedData.bookingnr
+    : (extractedData.bookingnr ? [extractedData.bookingnr] : []);
 
-  function resetAll() {
-    clearFile();
-    document.getElementById('raw-text').value = '';
-    document.getElementById('results-section').classList.remove('visible');
-    document.getElementById('raw-notes').classList.remove('visible');
-    hideStatus();
-    ['f-bookingnr','f-fakturanr','f-kid','f-belop','f-forfallsdato','f-kontakt'].forEach(id => {
-      const el = document.getElementById(id);
-      el.value = '';
-      el.classList.remove('filled');
-    });
-    checkReady();
+  const payload = {
+    Firma:       extractedData.firma       ?? '',
+    Fakturanr:   extractedData.fakturanr   ?? '',
+    Bookingnr:   bookingnrArr.join('\n'),   // ← linjeskift = ¶ i FileMaker
+    GjestNavn:   extractedData.gjestnavn   ?? '',
+    Forfall:     extractedData.forfall     ?? '',
+    KID:         extractedData.kid         ?? '',
+    Sum:         extractedData.sum         ?? '',
+    MVA:         extractedData.mva         ?? '',
+    Fakturadato: extractedData.fakturadato ?? '',
+    Bankkonto:   extractedData.iban        ?? '',
+  };
+
+  const jsonPayload = JSON.stringify(payload);
+
+  try {
+    if (typeof FileMaker !== 'undefined') {
+      FileMaker.PerformScript('AI_Motta_Fakturadata', jsonPayload);
+      setStatus('success', '✅ Data sendt til FileMaker!');
+    } else {
+      window.location = 'fmp://$/BOSsystem?script=AI_Motta_Fakturadata&param=' + encodeURIComponent(jsonPayload);
+      setStatus('success', '✅ Sender data til FileMaker…');
+    }
+  } catch(e) {
+    console.log('FileMaker payload:', jsonPayload);
+    alert('FileMaker payload (dev-modus):\n\n' + JSON.stringify(payload, null, 2));
   }
+}
+
+function toggleRaw() {
+  const el = document.getElementById('rawText');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+buildFields();
 </script>
 </body>
 </html>

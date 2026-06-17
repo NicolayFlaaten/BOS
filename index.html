@@ -320,7 +320,7 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.7</span></h1>
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.8</span></h1>
   <select id="modelSelect" onchange="updateModelBadge()">
     <optgroup label="🇺🇸 USA (Anthropic direkte)">
       <option value="anthropic|claude-haiku-4-5">Claude Haiku 4.5 — rask/billig</option>
@@ -765,7 +765,16 @@ JSON-struktur (null for felt som ikke finnes):
     const raw = data.content?.[0]?.text || '';
     document.getElementById('rawText').textContent = raw;
 
-    const clean = raw.replace(/```json|```/g, '').trim();
+    // Robust JSON-parsing — håndterer Anthropic og Mistral sine ulike formater
+    let clean = raw;
+    // Finn JSON-blokk mellom første { og siste }
+    const firstBrace = clean.indexOf('{');
+    const lastBrace  = clean.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      clean = clean.slice(firstBrace, lastBrace + 1);
+    } else {
+      clean = clean.replace(/```json|```/g, '').trim();
+    }
     const parsed = JSON.parse(clean);
     extractedData = parsed;
 

@@ -27,6 +27,26 @@
   }
   #toolbar h1 { color: white; font-size: 13px; font-weight: 600; flex: 1; }
 
+  #modelSelect {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid #4a6fa0;
+    background: #162d4a;
+    color: #a0c4f0;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  #modelSelect option { background: #1e3a5f; color: white; }
+  #modelBadge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  #modelBadge.eu { background: #166534; color: #d1fae5; }
+  #modelBadge.us { background: #92400e; color: #fef3c7; }
+
   #dropZone {
     margin: 10px 12px 6px;
     border: 2px dashed #93c5fd;
@@ -300,7 +320,19 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.5</span></h1>
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.7</span></h1>
+  <select id="modelSelect" onchange="updateModelBadge()">
+    <optgroup label="🇺🇸 USA (Anthropic direkte)">
+      <option value="anthropic|claude-haiku-4-5">Claude Haiku 4.5 — rask/billig</option>
+      <option value="anthropic|claude-sonnet-4-6">Claude Sonnet 4.6 — sterkere</option>
+    </optgroup>
+    <optgroup label="🇪🇺 EU (Mistral AI — Frankrike)">
+      <option value="mistral|mistral-small-latest">Mistral Small — rask/billig</option>
+      <option value="mistral|mistral-medium-latest">Mistral Medium — sterkere</option>
+      <option value="mistral|mistral-large-latest">Mistral Large — best</option>
+    </optgroup>
+  </select>
+  <span id="modelBadge" class="us">🇺🇸 USA</span>
 </div>
 
 <div id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -354,9 +386,46 @@
 //  KONFIGURASJON — tilpass disse variablene ved FileMaker-integrasjon
 // ════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════
+//  MODELL-KONFIGURASJON
+//  Legg til egne worker-URL-er for Mistral når det er klart
+// ════════════════════════════════════════════════════════════════
+const PROVIDERS = {
+  anthropic: {
+    workerUrl: 'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev',
+    label: '🇺🇸 USA — Anthropic',
+    badgeClass: 'us',
+    badgeText: '🇺🇸 USA',
+  },
+  mistral: {
+    // Samme Cloudflare Worker kan brukes hvis du legger til Mistral-støtte
+    // Eller sett opp en egen worker for Mistral
+    workerUrl: 'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev',
+    label: '🇪🇺 EU — Mistral AI',
+    badgeClass: 'eu',
+    badgeText: '🇪🇺 EU',
+  },
+};
+
+function getSelectedModel() {
+  const val = document.getElementById('modelSelect')?.value || 'anthropic|claude-haiku-4-5';
+  const [provider, model] = val.split('|');
+  return { provider, model, config: PROVIDERS[provider] };
+}
+
+function updateModelBadge() {
+  const { config } = getSelectedModel();
+  const badge = document.getElementById('modelBadge');
+  if (badge) {
+    badge.textContent = config.badgeText;
+    badge.className = 'modelBadge ' + config.badgeClass;  // note: id stays modelBadge
+  }
+}
+
 const FM_CONFIG = {
   // URL til Cloudflare Worker som proxy til Anthropic
-  workerUrl: 'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev',
+  workerUrl:   'https://green-block-aa07accessnorway.rzt4p6sh68.workers.dev',
+  workerToken: '«WORKER_TOKEN»',  // FileMaker injiserer dette ved oppstart
 
   // Navn på FileMaker-scriptet som mottar data fra Web Vieweren
   mottaScript: 'AI_Motta_Fakturadata',
@@ -666,11 +735,16 @@ JSON-struktur (null for felt som ikke finnes):
   const contentType = currentFileType === 'pdf' ? 'document' : 'image';
 
   try {
-    const resp = await fetch(FM_CONFIG.workerUrl, {
+    const { provider, model, config: providerConfig } = getSelectedModel();
+    const resp = await fetch(providerConfig.workerUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Worker-Token': FM_CONFIG.workerToken,
+        'X-Provider': provider
+      },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5',
+        model: model,
         max_tokens: 1024,
         messages: [{
           role: 'user',

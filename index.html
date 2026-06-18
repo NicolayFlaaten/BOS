@@ -320,7 +320,7 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.9</span></h1>
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v2.0</span></h1>
   <select id="modelSelect" onchange="updateModelBadge()">
     <optgroup label="🇺🇸 USA (Anthropic direkte)">
       <option value="anthropic|claude-haiku-4-5">Claude Haiku 4.5 — rask/billig</option>
@@ -618,15 +618,7 @@ document.getElementById('fileInput').addEventListener('change', e => handleFile(
 function setStatus(type, msg) {
   const el = document.getElementById('status');
   el.className = type ? 'status ' + type : '';
-  // Bruker innerHTML kun med kontrollerte interne strenger (aldri brukerinput)
-  // msg settes alltid av intern kode, aldri fra API-svar eller bruker
-  el.innerHTML = msg || '';
-}
-
-// Sikker tekstsetter — bruker textContent der vi ikke trenger HTML
-function setStatusText(type, msg) {
-  const el = document.getElementById('status');
-  el.className = type ? 'status ' + type : '';
+  // Alltid textContent — aldri innerHTML — for å unngå XSS
   el.textContent = msg || '';
 }
 

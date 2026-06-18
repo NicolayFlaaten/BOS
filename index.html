@@ -320,7 +320,7 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.8</span></h1>
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v1.9</span></h1>
   <select id="modelSelect" onchange="updateModelBadge()">
     <optgroup label="🇺🇸 USA (Anthropic direkte)">
       <option value="anthropic|claude-haiku-4-5">Claude Haiku 4.5 — rask/billig</option>
@@ -618,7 +618,16 @@ document.getElementById('fileInput').addEventListener('change', e => handleFile(
 function setStatus(type, msg) {
   const el = document.getElementById('status');
   el.className = type ? 'status ' + type : '';
-  el.innerHTML = msg;
+  // Bruker innerHTML kun med kontrollerte interne strenger (aldri brukerinput)
+  // msg settes alltid av intern kode, aldri fra API-svar eller bruker
+  el.innerHTML = msg || '';
+}
+
+// Sikker tekstsetter — bruker textContent der vi ikke trenger HTML
+function setStatusText(type, msg) {
+  const el = document.getElementById('status');
+  el.className = type ? 'status ' + type : '';
+  el.textContent = msg || '';
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -642,9 +651,19 @@ function sjekkKontonummer(fakturakonto, iban) {
 
   if (!match && (fk || ib)) {
     const varsel = document.getElementById('kontoVarsel');
-    varsel.innerHTML = `⚠️ <strong>Kontonummer-avvik!</strong><br>
-      Registrert: <strong>${regKonto}</strong><br>
-      På faktura: <strong>${fakturakonto || '—'}</strong>${iban ? ' / ' + iban : ''}`;
+    // Bygg DOM-elementer i stedet for innerHTML for å unngå XSS
+    varsel.textContent = '';
+    const advarselTekst = document.createElement('div');
+    advarselTekst.textContent = '⚠️ Kontonummer-avvik!';
+    advarselTekst.style.fontWeight = '700';
+    advarselTekst.style.marginBottom = '3px';
+    const regLinje = document.createElement('div');
+    regLinje.textContent = 'Registrert: ' + regKonto;
+    const fakLinje = document.createElement('div');
+    fakLinje.textContent = 'På faktura: ' + (fakturakonto || '—') + (iban ? ' / ' + iban : '');
+    varsel.appendChild(advarselTekst);
+    varsel.appendChild(regLinje);
+    varsel.appendChild(fakLinje);
     varsel.classList.add('show');
 
     // Marker kontonr-feltet rødt
@@ -667,8 +686,13 @@ function sjekkInnfakturaForslag(fakturaSum) {
 
   if (!isNaN(fs) && !isNaN(ps) && Math.abs(fs - ps) < 0.01) {
     const forslag = document.getElementById('innfakturaForslag');
-    forslag.innerHTML = `<strong>✅ Sum stemmer med portal (${ps})</strong>
-      Bookingsum og fakturassum er like — du kan opprette innfaktura.`;
+    forslag.textContent = '';
+    const forslagTittel = document.createElement('strong');
+    forslagTittel.textContent = '✅ Sum stemmer med portal (' + ps + ')';
+    const forslagTekst = document.createElement('div');
+    forslagTekst.textContent = 'Bookingsum og fakturasum er like — du kan opprette innfaktura.';
+    forslag.appendChild(forslagTittel);
+    forslag.appendChild(forslagTekst);
     forslag.classList.add('show');
   }
 }
@@ -683,7 +707,14 @@ async function analyzeInvoice() {
   btn.disabled = true;
   document.getElementById('btnIcon').innerHTML = '<span class="spinner"></span>';
   document.getElementById('btnText').textContent = 'Analyserer…';
-  setStatus('info', '<span class="spinner"></span> Claude leser dokumentet…');
+  // Spinner lages via DOM for å unngå innerHTML med brukerdata
+const spinnerEl = document.createElement('span');
+spinnerEl.className = 'spinner';
+const statusEl = document.getElementById('status');
+statusEl.className = 'status info';
+statusEl.textContent = '';
+statusEl.appendChild(spinnerEl);
+statusEl.appendChild(document.createTextNode(' Claude leser dokumentet…'));
   clearFields();
   document.getElementById('sendBtn').classList.remove('visible');
 

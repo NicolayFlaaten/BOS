@@ -309,7 +309,7 @@
   }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4lMBdX4bEXeShFOqBNJAfmgahM/AvMlE8xZt0f6PqNYAMcBpNt9bUSA8PaVmYpKpMqfIIJVMp8zy5JDvGpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
   if (typeof pdfjsLib !== 'undefined') {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -320,19 +320,19 @@
 <body>
 
 <div id="toolbar">
-  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v2.0</span></h1>
+  <h1>🤖 AI Faktura Analyse <span style="font-size:10px; font-weight:400; color:#4a6fa0; margin-left:6px;">v2.1</span></h1>
   <select id="modelSelect" onchange="updateModelBadge()">
     <optgroup label="🇺🇸 USA (Anthropic direkte)">
       <option value="anthropic|claude-haiku-4-5">Claude Haiku 4.5 — rask/billig</option>
       <option value="anthropic|claude-sonnet-4-6">Claude Sonnet 4.6 — sterkere</option>
     </optgroup>
     <optgroup label="🇪🇺 EU (Mistral AI — Frankrike)">
-      <option value="mistral|mistral-small-latest">Mistral Small — rask/billig</option>
+      <option value="mistral|mistral-small-latest" selected>Mistral Small — rask/billig</option>
       <option value="mistral|mistral-medium-latest">Mistral Medium — sterkere</option>
       <option value="mistral|mistral-large-latest">Mistral Large — best</option>
     </optgroup>
   </select>
-  <span id="modelBadge" class="us">🇺🇸 USA</span>
+  <span id="modelBadge" class="eu">🇪🇺 EU</span>
 </div>
 
 <div id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -467,6 +467,17 @@ let extractedData   = null;
 // ════════════════════════════════════════════════════════════════
 //  BYGG FELT-UI
 // ════════════════════════════════════════════════════════════════
+// Saniterer FM_CONFIG-verdier ved oppstart for å hindre XSS/injeksjon
+// Selv om FileMaker sender uventede tegn vil disse bli behandlet som ren tekst
+function sanitizeFMConfig() {
+  const safe = (val) => {
+    if (!val || val.startsWith('«')) return val; // plassholder, ikke satt ennå
+    return String(val).replace(/[<>"'`]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+  };
+  FM_CONFIG.registrertKontonr = safe(FM_CONFIG.registrertKontonr);
+  FM_CONFIG.portalSum         = safe(FM_CONFIG.portalSum);
+}
+
 function buildFields() {
   const container = document.getElementById('fields');
   container.innerHTML = '';
@@ -885,6 +896,7 @@ function toggleRaw() {
   el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
+sanitizeFMConfig();
 buildFields();
 </script>
 </body>

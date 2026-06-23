@@ -704,6 +704,15 @@ function sjekkInnfakturaForslag(fakturaSum) {
 //  ANALYSE
 // ════════════════════════════════════════════════════════════════
 async function analyzeInvoice() {
+  // Hvis FileMaker har sendt en fil via loadFromFileMaker(), bruk den
+  if (window._fmBase64 && window._fmMediaType) {
+    currentFile = {
+      base64: window._fmBase64,
+      mediaType: window._fmMediaType,
+      name: 'faktura_fra_filemaker'
+    };
+  }
+
   if (!currentFileData) { setStatus('error', '⚠️ Last opp en faktura først'); return; }
 
   const btn = document.getElementById('analyzeBtn');
@@ -894,6 +903,34 @@ function sendToFileMaker() {
 function toggleRaw() {
   const el = document.getElementById('rawText');
   el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+
+// ════════════════════════════════════════════════════════════════
+//  FILEMAKER INTEGRASJON — mottar fil fra container-felt
+//  Kalles av FileMaker via Perform JavaScript in Web Viewer:
+//  loadFromFileMaker('image/jpeg', '<base64data>')
+// ════════════════════════════════════════════════════════════════
+function loadFromFileMaker(mediaType, base64Data) {
+  try {
+    const dataUrl = 'data:' + mediaType + ';base64,' + base64Data;
+
+    // Sett currentFile-variabelen som analyzeInvoice() bruker
+    window._fmMediaType = mediaType;
+    window._fmBase64    = base64Data;
+    window._fmDataUrl   = dataUrl;
+
+    // Vis forhåndsvisning
+    if (mediaType === 'application/pdf') {
+      renderPDF(dataUrl);
+    } else {
+      renderImage(dataUrl);
+    }
+
+    setStatus('', 'Faktura lastet fra FileMaker — klikk Analyser faktura');
+  } catch(e) {
+    console.error('loadFromFileMaker feil:', e);
+  }
 }
 
 sanitizeFMConfig();
